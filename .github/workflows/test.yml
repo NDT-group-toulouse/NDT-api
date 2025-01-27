@@ -39,6 +39,7 @@ jobs:
 
   cleanup:
     runs-on: test
+    continue-on-error: true
     needs: [deploy]
     steps:
       - uses: actions/checkout@v3

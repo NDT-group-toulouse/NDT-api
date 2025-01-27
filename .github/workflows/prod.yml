@@ -38,6 +38,7 @@ jobs:
 
   cleanup:
     runs-on: prod
+    continue-on-error: true
     needs: [deploy]
     steps:
       - uses: actions/checkout@v3
