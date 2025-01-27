@@ -4,7 +4,7 @@ from sqlalchemy.orm import declarative_base
 import os
 
 # Configuration de la base de données
-DATABASE_URL="postgresql://postgres:postgres@retronova-db:5432/postgres"
+DATABASE_URL="postgresql://postgres:postgres@ndt-db:5432/postgres"
 
 if not DATABASE_URL:
     raise ValueError("DATABASE_URL is not set in the environment variables")
