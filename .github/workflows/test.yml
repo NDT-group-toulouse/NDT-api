@@ -1,0 +1,68 @@
+name: Test
+
+on:
+  push:
+    branches: [ "develop" ]
+  pull_request:
+    branches: [ "develop" ]
+  workflow_dispatch:
+
+env:
+  TAG: 'test'
+  IMAGE_NAME: "ndt-api"
+  CONTAINER_NAME: "ndt-api"
+  PORT: 3000
+
+  DATABASE_URL: ${{ secrets.DATABASE_URL_TEST }}
+  DATABASE_USER: ${{ secrets.DATABASE_USER_TEST }}
+  DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD_TEST }}
+  DATABASE_NAME: ${{ secrets.DATABASE_NAME_TEST }}
+
+jobs:
+
+  build:
+    runs-on: test
+    steps:
+      - uses: actions/checkout@v3
+      - name: build
+        run: |
+          docker build --pull -t $IMAGE_NAME:$TAG --no-cache \ 
+          --build-arg DATABASE_URL=$DATABASE_URL \
+          --build-arg DATABASE_USER=$DATABASE_USER \
+          --build-arg DATABASE_PASSWORD=$DATABASE_PASSWORD \
+          --build-arg DATABASE_NAME=$DATABASE_NAME .
+
+  stop:
+    runs-on: test
+    needs: build
+    steps:
+      - uses: actions/checkout@v3
+      - name: stop
+        run: |
+          docker stop $CONTAINER_NAME || true
+          docker rm $CONTAINER_NAME || true
+
+  deploy:
+    runs-on: test
+    needs: [stop]
+    steps:
+      - uses: actions/checkout@v3
+      - name: deploy
+        run: |
+          docker tag $IMAGE_NAME:$TAG $IMAGE_NAME:$TAG
+          docker run -d --name $CONTAINER_NAME \
+          -e DATABASE_URL=$DATABASE_URL \
+          -e DATABASE_USER=$DATABASE_USER \
+          -e DATABASE_PASSWORD=$DATABASE_PASSWORD \
+          -e DATABASE_NAME=$DATABASE_NAME \
+          -p $PORT:$PORT $IMAGE_NAME:$TAG
+
+  cleanup:
+    runs-on: test
+    needs: [deploy]
+    steps:
+      - uses: actions/checkout@v3
+      - name: cleanup
+        run: |
+          docker image prune -f
+          docker container prune -f
