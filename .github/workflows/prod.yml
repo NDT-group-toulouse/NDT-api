@@ -18,27 +18,14 @@ env:
 
 jobs:
 
-  build:
-    runs-on: prod
-    steps:
-      - uses: actions/checkout@v3
-      - name: build
-        run: |
-          docker build --pull -t $IMAGE_NAME:$TAG --no-cache \
-          --build-arg DATABASE_URL=$DATABASE_URL \
-          --build-arg DATABASE_USER=$DATABASE_USER \
-          --build-arg DATABASE_PASSWORD=$DATABASE_PASSWORD \
-          --build-arg DATABASE_NAME=$DATABASE_NAME ./app/.
-
   stop:
     runs-on: prod
-    needs: build
     steps:
       - uses: actions/checkout@v3
       - name: stop
         run: |
           docker stop $CONTAINER_NAME || true
-          docker rm $CONTAINER_NAME || true
+          docker compose down
           
   deploy:
     runs-on: prod
@@ -47,13 +34,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: deploy
         run: |
-          docker tag $IMAGE_NAME:$TAG $IMAGE_NAME:$TAG
-          docker run -d --name $CONTAINER_NAME \
-          -e DATABASE_URL=$DATABASE_URL \
-          -e DATABASE_USER=$DATABASE_USER \
-          -e DATABASE_PASSWORD=$DATABASE_PASSWORD \
-          -e DATABASE_NAME=$DATABASE_NAME \
-          -p $PORT:$PORT $IMAGE_NAME:$TAG
+          docker compose up
 
   cleanup:
     runs-on: prod

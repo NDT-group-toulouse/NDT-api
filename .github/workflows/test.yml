@@ -19,15 +19,14 @@ env:
   DATABASE_NAME: ${{ vars.DATABASE_NAME_TEST }}
 
 jobs:
+
   stop:
     runs-on: test
-    needs: build
     steps:
       - uses: actions/checkout@v3
       - name: stop
         run: |
-          docker stop $CONTAINER_NAME || true
-          docker rm $CONTAINER_NAME || true
+          docker compose down
 
   deploy:
     runs-on: test
