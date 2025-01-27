@@ -9,7 +9,7 @@ env:
   TAG: 'prod'
   IMAGE_NAME: "ndt-api"
   CONTAINER_NAME: "ndt-api"
-  PORT: 3000
+  PORT: 8000
 
   DATABASE_URL: ${{ vars.DATABASE_URL_PROD }}
   DATABASE_USER: ${{ vars.DATABASE_USER_PROD }}
