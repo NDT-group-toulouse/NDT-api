@@ -1,0 +1,49 @@
+name: Test
+
+on:
+  push:
+    branches: [ "develop" ]
+  pull_request:
+    branches: [ "develop" ]
+  workflow_dispatch:
+
+env:
+  TAG: 'test'
+  IMAGE_NAME: "ndt-api"
+  CONTAINER_NAME: "ndt-api"
+  PORT: 8000
+
+  DATABASE_URL: ${{ vars.DATABASE_URL_TEST }}
+  DATABASE_USER: ${{ vars.DATABASE_USER_TEST }}
+  DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD_TEST }}
+  DATABASE_NAME: ${{ vars.DATABASE_NAME_TEST }}
+
+jobs:
+
+  stop:
+    runs-on: test
+    steps:
+      - uses: actions/checkout@v3
+      - name: stop
+        run: |
+          docker compose down
+
+  deploy:
+    runs-on: test
+    needs: [stop]
+    steps:
+      - uses: actions/checkout@v3
+      - name: deploy
+        run: |
+          docker compose up -d
+
+  cleanup:
+    runs-on: test
+    continue-on-error: true
+    needs: [deploy]
+    steps:
+      - uses: actions/checkout@v3
+      - name: cleanup
+        run: |
+          docker image prune -f
+          docker container prune -f
